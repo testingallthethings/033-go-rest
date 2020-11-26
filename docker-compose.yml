@@ -1,0 +1,9 @@
+---
+
+version: "3"
+
+services:
+  http:
+    image: service_test
+    ports:
+      - "8080:8080"
