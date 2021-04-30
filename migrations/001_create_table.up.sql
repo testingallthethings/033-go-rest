@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS book (
     name VARCHAR ( 255 ) NOT NULL,
     image VARCHAR ( 255 ) NOT NULL,
     genre VARCHAR ( 255 ) NOT NULL,
-    year_published int NOT NULL,
+    year_published int NOT NULL
 );

@@ -1,4 +1,5 @@
 test: docker_build_test
+	docker-compose down
 	docker-compose up -d
 	docker-compose exec -T http go test ./...
 	docker-compose down
