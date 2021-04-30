@@ -5,5 +5,19 @@ version: "3"
 services:
   http:
     image: service_test
+    environment:
+      DATABASE_URL: "postgres://tester:testing@db:5432/music?sslmode=disable"
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+    entrypoint: "bin/entrypoint.sh"
+
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: tester
+      POSTGRES_PASSWORD: testing
+      POSTGRES_DB: music
