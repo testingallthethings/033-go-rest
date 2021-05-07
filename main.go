@@ -3,8 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/testingallthethings/033-go-rest/book"
+	"github.com/testingallthethings/033-go-rest/rest"
 	"log"
 	"net/http"
 	"os"
@@ -58,6 +59,9 @@ func main() {
 
 	r := mux.NewRouter()
 
+	retriver := book.NewRetriever(db)
+
+	r.Handle("/book/{isbn}", rest.NewGetBookHandler(retriver))
 	r.HandleFunc(
 		"/healthcheck",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -71,42 +75,6 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			w.Write(b)
 	})
-	r.HandleFunc(
-		"/book/{isbn}",
-		func(w http.ResponseWriter, r *http.Request) {
-			v := mux.Vars(r)
-
-			isbn := v["isbn"]
-			
-			b := Book{}
-			row := db.QueryRow("SELECT isbn, name, image, genre, year_published FROM book WHERE isbn = $1", isbn)
-			err := row.Scan(
-				&b.ISBN,
-				&b.Title,
-				&b.Image,
-				&b.Genre,
-				&b.YearPublished,
-				)
-
-			if err != nil {
-				e := jsonError{
-					Code: "001",
-					Msg:  fmt.Sprintf("No book with ISBN %s", isbn),
-				}
-
-				body, _ := json.Marshal(e)
-
-				w.WriteHeader(http.StatusNotFound)
-				w.Write(body)
-				return
-			}
-
-			body, _ := json.Marshal(b)
-
-			w.WriteHeader(http.StatusOK)
-			w.Write(body)
-		},
-		)
 
 	s := http.Server{
 		Addr:              ":8080",
