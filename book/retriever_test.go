@@ -1,14 +1,12 @@
 package book_test
 
 import (
-	"database/sql"
+	"errors"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/testingallthethings/033-go-rest/book"
 	"github.com/testingallthethings/033-go-rest/rest"
-	"os"
 	"testing"
-
-	_ "github.com/lib/pq"
 )
 
 type RetrieverSuite struct {
@@ -19,48 +17,46 @@ func TestRetrieverSuite(t *testing.T) {
 	suite.Run(t, new(RetrieverSuite))
 }
 
-var (
-	db *sql.DB
-	r book.Retriever
-)
+func (s *RetrieverSuite) TestRetrieverError() {
+	expectedErr := errors.New("broken")
+ 	mbr := new(MockBookRetriever)
+ 	mbr.On("FindBookBy", "123456789").Return(rest.Book{}, expectedErr)
 
-func (s *RetrieverSuite) SetupTest() {
-	db, _ = sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	r = book.NewRetriever(db)
+ 	br := book.NewRetriever(mbr)
+ 	_, err := br.GetBook("123456789")
+
+ 	s.Error(err)
+ 	s.Equal(expectedErr, err)
 }
 
-func (s *RetrieverSuite) TearDownTest() {
-	db.Close()
-}
+func (s *RetrieverSuite) TestRetrieverSuccessful() {
+	mbr := new(MockBookRetriever)
+	expBook := rest.Book{ISBN: "123456789"}
+	mbr.On("FindBookBy", "123456789").Return(expBook, nil)
 
-func (s *RetrieverSuite) TestRetrievingBookThatDoesNotExist() {
-	_, err := r.GetBook("123456789")
-
-	s.Equal(rest.ErrBookNotFound, err)
-}
-
-func (s *RetrieverSuite) TestRetrievingBookThatExists() {
-	db.Exec("INSERT INTO book (isbn, name, image, genre, year_published) VALUES ('987654321', 'Testing All The Things', 'testing.jpg', 'Computing', 2021)")
-
-	b, err := r.GetBook("987654321")
+	br := book.NewRetriever(mbr)
+	book, err := br.GetBook("123456789")
 
 	s.NoError(err)
-
-	book := rest.Book{
-		ISBN:          "987654321",
-		Title:         "Testing All The Things",
-		Image:         "testing.jpg",
-		Genre:         "Computing",
-		YearPublished: 2021,
-	}
-
-	s.Equal(book, b)
+	s.Equal(expBook, book)
 }
 
-func (s *RetrieverSuite) TestWhenUnexpectedErrorRetrievingBook() {
-	db.Close()
+func (s *RetrieverSuite) TestInvalidISBN() {
+	mbr := new(MockBookRetriever)
 
-	_, err := r.GetBook("123456789")
+	br := book.NewRetriever(mbr)
+	_, err := br.GetBook("1234C6789")
 
-	s.Equal(book.ErrFailedToRetrieveBook, err)
+	s.Error(err)
+	s.Equal(rest.ErrInvalidISBN, err)
+}
+
+type MockBookRetriever struct {
+	mock.Mock
+}
+
+func (m *MockBookRetriever) FindBookBy(isbn string) (rest.Book, error) {
+	args := m.Called(isbn)
+
+	return args.Get(0).(rest.Book), args.Error(1)
 }

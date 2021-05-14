@@ -59,9 +59,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	retriver := book.NewRetriever(db)
+	dbRetriever := book.NewDBRetriever(db)
+	retriever := book.NewRetriever(dbRetriever)
 
-	r.Handle("/book/{isbn}", rest.NewGetBookHandler(retriver))
+	r.Handle("/book/{isbn}", rest.NewGetBookHandler(retriever))
 	r.HandleFunc(
 		"/healthcheck",
 		func(w http.ResponseWriter, r *http.Request) {

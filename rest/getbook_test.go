@@ -73,6 +73,16 @@ func (s *GetBookSuite) TestGettingABookThatDoesExist() {
 	s.JSONEq(expBody, string(body))
 }
 
+func (s *GetBookSuite) TestGetBookWhenProvidingInvalidISBN() {
+	br.On("GetBook", "123456789").Return(rest.Book{}, rest.ErrInvalidISBN)
+
+	h.ServeHTTP(resp, req)
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	s.Equal(http.StatusBadRequest, resp.Code)
+	s.JSONEq(`{"code": "003", "msg": "ISBN is invalid"}`, string(body))
+}
+
 func (s *GetBookSuite) TestGetBookReturnsUnexpectedError() {
 	br.On("GetBook", "123456789").Return(rest.Book{}, errors.New("broken"))
 
