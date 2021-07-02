@@ -1,0 +1,85 @@
+{
+  "consumer": {
+    "name": "MarksBookClient"
+  },
+  "provider": {
+    "name": "BookApi"
+  },
+  "interactions": [
+    {
+      "description": "A GET request for book with ISBN 987654321",
+      "providerState": "Book with ISBN 987654321 exists",
+      "request": {
+        "method": "GET",
+        "path": "/book/987654321",
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "genre": "Computers",
+          "image": "testing.jpg",
+          "isbn": "987654321",
+          "title": "Testing All The Things",
+          "year_published": 2021
+        },
+        "matchingRules": {
+          "$.body.genre": {
+            "match": "type"
+          },
+          "$.body.image": {
+            "match": "type"
+          },
+          "$.body.isbn": {
+            "match": "type"
+          },
+          "$.body.title": {
+            "match": "type"
+          },
+          "$.body.year_published": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "A GET request for book with ISBN 123456789",
+      "providerState": "There is not a book with ISBN 123456789",
+      "request": {
+        "method": "GET",
+        "path": "/book/123456789",
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "code": "1234",
+          "msg": "No book with ISBN 123456789"
+        },
+        "matchingRules": {
+          "$.body.code": {
+            "match": "type"
+          },
+          "$.body.msg": {
+            "match": "type"
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}
