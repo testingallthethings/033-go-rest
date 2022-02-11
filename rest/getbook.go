@@ -23,7 +23,7 @@ type jsonError struct {
 
 var (
 	ErrBookNotFound = errors.New("Book not found")
-	ErrInvalidISBN = errors.New("ISBN is invalid")
+	ErrInvalidISBN  = errors.New("ISBN is invalid")
 )
 
 type BookRetriever interface {
@@ -39,6 +39,8 @@ func (g GetBookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	isbn := v["isbn"]
 
 	book, err := g.br.GetBook(isbn)
+
+	w.Header().Add("Content-Type", "application/json")
 
 	if err != nil {
 		var e jsonError

@@ -7,6 +7,7 @@ services:
     image: service_test
     environment:
       DATABASE_URL: "postgres://tester:testing@db:5432/music?sslmode=disable"
+      PACT_TOKEN: "qjRvFT28GPdVZ3aeHMJtxw"
     ports:
       - "8080:8080"
     depends_on:

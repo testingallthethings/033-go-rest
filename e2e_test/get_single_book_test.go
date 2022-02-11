@@ -1,3 +1,5 @@
+// +build e2e
+
 package e2e_test
 
 import (
@@ -17,6 +19,13 @@ type GetSingleBookSuite struct {
 
 func TestGetSingleBookSuite(t *testing.T) {
 	suite.Run(t, new(GetSingleBookSuite))
+}
+
+var db *sql.DB
+
+func (s *GetSingleBookSuite) SetupTest() {
+	db, _ = sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db.Exec("TRUNCATE book")
 }
 
 func (s *GetSingleBookSuite) TestGetBookThatDoesNotExist() {
@@ -40,7 +49,7 @@ func (s *GetSingleBookSuite) TestGetBookWithInvalidISBNGiven() {
 }
 
 func (s *GetSingleBookSuite) TestGetBookThatDoesExist() {
-	db, _ := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	s.T().Skip("Pact Demo")
 	db.Exec("INSERT INTO book (isbn, name, image, genre, year_published) VALUES ('987654321', 'Testing All The Things', 'testing.jpg', 'Computing', 2021)")
 
 	c := http.Client{}
